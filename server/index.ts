@@ -70,7 +70,8 @@ app.get('/{*splat}', (_q, r) => {
 // Error handler
 app.use((e: Error, _q: express.Request, r: express.Response, _n: express.NextFunction) => {
   r.status(400).json({ error: e.message })
-})const http = createServer(app)
+});
+const http = createServer(app)
 const io = new Server(http, { cors: { origin: '*' } })
 const clean = (v: unknown, n: number) => String(v ?? '').slice(0, n)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
