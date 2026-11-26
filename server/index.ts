@@ -57,8 +57,20 @@ if (fs.existsSync(INDEX)) {
   app.use(express.static(DIST, { maxAge: '1h' }))
   app.use((q, r, n) => { if (q.method === 'GET' && !q.path.startsWith('/uploads') && !q.path.startsWith('/api')) r.sendFile(INDEX); else n() })
 }
-app.use((e: Error, _q: express.Request, r: express.Response, _n: express.NextFunction) => { r.status(400).json({ error: e.message }) })
-const http = createServer(app)
+// Serve production frontend
+const distPath = path.resolve('dist')
+
+app.use(express.static(distPath))
+
+// Support direct navigation and room invite links
+app.get('/{*splat}', (_q, r) => {
+  r.sendFile(path.join(distPath, 'index.html'))
+})
+
+// Error handler
+app.use((e: Error, _q: express.Request, r: express.Response, _n: express.NextFunction) => {
+  r.status(400).json({ error: e.message })
+})const http = createServer(app)
 const io = new Server(http, { cors: { origin: '*' } })
 const clean = (v: unknown, n: number) => String(v ?? '').slice(0, n)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
