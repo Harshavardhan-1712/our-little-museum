@@ -28,6 +28,21 @@ app.post('/api/upload', upload.array('files', 45), (q, r) => {
   if (!files.length) { r.status(400).json({ error: 'No valid image files received.' }); return }
   r.json({ urls: files.map((f) => '/uploads/' + f.filename) })
 })
+// Serve the production React application
+const dist = path.resolve('dist')
+
+app.use(express.static(dist))
+
+// Handle browser navigation and room invite URLs
+app.get(/.*/, (_q, r) => {
+  const index = path.join(dist, 'index.html')
+
+  if (fs.existsSync(index)) {
+    r.sendFile(index)
+  } else {
+    r.status(404).send('Frontend build not found. Run npm run build.')
+  }
+})
 const uploadMedia = multer({
   storage: multer.diskStorage({ destination: UP, filename: (_q, f, cb) => cb(null, randomUUID() + path.extname(f.originalname).toLowerCase().slice(0, 6)) }),
   limits: { fileSize: 200 * 1024 * 1024, files: 1 }, fileFilter: (_q, f, cb) => cb(null, /^(video|audio)\//.test(f.mimetype)),
